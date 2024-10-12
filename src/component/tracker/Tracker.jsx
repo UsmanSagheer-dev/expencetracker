@@ -8,12 +8,12 @@ function Tracker() {
   const [newExpense, setNewExpense] = useState({
     title: "",
     quantity: "",
+    unit: "",      // New unit field added
     unitPrice: ""
   });
   const [isEditing, setIsEditing] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(null);
 
-  // Load data from local storage when the component mounts
   useEffect(() => {
     const savedBudget = localStorage.getItem("budget");
     const savedExpenses = localStorage.getItem("expenses");
@@ -22,31 +22,26 @@ function Tracker() {
     if (savedExpenses) setExpenses(JSON.parse(savedExpenses));
   }, []);
 
-  // Save budget and expenses to local storage whenever they change
   useEffect(() => {
     localStorage.setItem("budget", JSON.stringify(budget));
     localStorage.setItem("expenses", JSON.stringify(expenses));
   }, [budget, expenses]);
 
-  // Handle budget input
   const handleBudgetChange = (e) => {
     setBudget(Number(e.target.value));
   };
 
-  // Handle new expense inputs
   const handleExpenseChange = (e) => {
     setNewExpense({ ...newExpense, [e.target.name]: e.target.value });
   };
 
-  // Add new or edit an expense
   const addOrUpdateExpense = () => {
-    if (newExpense.title && newExpense.quantity && newExpense.unitPrice) {
+    if (newExpense.title && newExpense.quantity && newExpense.unitPrice && newExpense.unit) {
       const totalAmount = parseFloat(newExpense.quantity) * parseFloat(newExpense.unitPrice);
       const currentDate = new Date().toLocaleDateString();
-      const titleWithPrice = `${newExpense.title} (${newExpense.quantity} kg/liters @ Rs${newExpense.unitPrice} per unit)`;
+      const titleWithPrice = `${newExpense.title} (${newExpense.quantity} ${newExpense.unit} @ Rs${newExpense.unitPrice} per unit)`;
 
       if (isEditing) {
-        // Update the expense if editing
         const updatedExpenses = expenses.map((expense, index) =>
           index === currentIndex
             ? { title: titleWithPrice, amount: totalAmount, date: currentDate }
@@ -56,42 +51,39 @@ function Tracker() {
         setIsEditing(false);
         setCurrentIndex(null);
       } else {
-        // Add new expense
         setExpenses([
           ...expenses,
           { title: titleWithPrice, amount: totalAmount, date: currentDate }
         ]);
       }
 
-      setNewExpense({ title: "", quantity: "", unitPrice: "" });
+      setNewExpense({ title: "", quantity: "", unit: "", unitPrice: "" });
     }
   };
 
-  // Delete an expense
   const deleteExpense = (index) => {
     const updatedExpenses = expenses.filter((_, i) => i !== index);
     setExpenses(updatedExpenses);
   };
 
-  // Edit an expense
   const editExpense = (index) => {
     const expenseToEdit = expenses[index];
     const [title, details] = expenseToEdit.title.split(" (");
-    const [quantity, unitPrice] = details.split(" @ Rs");
+    const [quantity, unitAndPrice] = details.split(" ");
+    const [unit, unitPrice] = unitAndPrice.split(" @ Rs");
 
     setNewExpense({
       title,
-      quantity: quantity.split(" ")[0], // Extract only quantity number
-      unitPrice: unitPrice.split(" ")[0] // Extract unit price
+      quantity: quantity.split(" ")[0],
+      unit: unit.split(" ")[0],
+      unitPrice: unitPrice.split(" ")[0]
     });
     setIsEditing(true);
     setCurrentIndex(index);
   };
 
-  // Calculate total expenses
   const totalExpenses = expenses.reduce((total, exp) => total + exp.amount, 0);
 
-  // Generate PDF and download
   const generatePDF = () => {
     const doc = new jsPDF();
     doc.text("Expense Report", 20, 10);
@@ -148,14 +140,21 @@ function Tracker() {
           name="quantity"
           value={newExpense.quantity}
           onChange={handleExpenseChange}
-          placeholder="Quantity (kg, liters, etc.)"
+          placeholder="Quantity"
+        />
+        <input
+          type="text"
+          name="unit"
+          value={newExpense.unit}
+          onChange={handleExpenseChange}
+          placeholder="Unit (kg, liters, etc.)"
         />
         <input
           type="number"
           name="unitPrice"
           value={newExpense.unitPrice}
           onChange={handleExpenseChange}
-          placeholder="Unit Price (Rs per kg/liter)"
+          placeholder="Unit Price (Rs per unit)"
         />
         <button onClick={addOrUpdateExpense}>
           {isEditing ? "Update Expense" : "Add Expense"}
