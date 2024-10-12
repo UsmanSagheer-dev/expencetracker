@@ -8,8 +8,8 @@ function Tracker() {
   const [newExpense, setNewExpense] = useState({
     title: "",
     quantity: "",
-    unit: "",      // New unit field added
-    unitPrice: ""
+    unit: "",
+    unitPrice: "",
   });
   const [isEditing, setIsEditing] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(null);
@@ -53,7 +53,7 @@ function Tracker() {
       } else {
         setExpenses([
           ...expenses,
-          { title: titleWithPrice, amount: totalAmount, date: currentDate }
+          { title: titleWithPrice, amount: totalAmount, date: currentDate },
         ]);
       }
 
@@ -68,16 +68,21 @@ function Tracker() {
 
   const editExpense = (index) => {
     const expenseToEdit = expenses[index];
-    const [title, details] = expenseToEdit.title.split(" (");
-    const [quantity, unitAndPrice] = details.split(" ");
-    const [unit, unitPrice] = unitAndPrice.split(" @ Rs");
 
+    // Splitting the title to get details
+    const [title, details] = expenseToEdit.title.split(" (");
+    const [quantityAndUnit, unitPriceString] = details.split(" @ Rs");
+    const [quantity, unit] = quantityAndUnit.split(" ");
+    const unitPrice = unitPriceString.split(" ")[0];
+
+    // Set the values in newExpense state
     setNewExpense({
-      title,
-      quantity: quantity.split(" ")[0],
-      unit: unit.split(" ")[0],
-      unitPrice: unitPrice.split(" ")[0]
+      title: title.trim(),
+      quantity: quantity.trim(),
+      unit: unit.trim(),
+      unitPrice: unitPrice.trim(),
     });
+
     setIsEditing(true);
     setCurrentIndex(index);
   };
