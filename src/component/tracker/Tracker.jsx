@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import Button from '../button/Button';
+import PDFViewer from '../pdfViewer/PDFViewer';
 
 function Tracker() {
   const [budget, setBudget] = useState(0);
@@ -16,7 +15,6 @@ function Tracker() {
   const [currentIndex, setCurrentIndex] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  // Load data from local storage when the component mounts
   useEffect(() => {
     const savedBudget = localStorage.getItem("budget");
     const savedExpenses = localStorage.getItem("expenses");
@@ -25,7 +23,6 @@ function Tracker() {
     if (savedExpenses) setExpenses(JSON.parse(savedExpenses));
   }, []);
 
-  // Save data to local storage whenever budget or expenses change
   useEffect(() => {
     if (budget !== 0) localStorage.setItem("budget", JSON.stringify(budget));
     if (expenses.length > 0) localStorage.setItem("expenses", JSON.stringify(expenses));
@@ -62,7 +59,7 @@ function Tracker() {
       }
 
       setNewExpense({ title: "", quantity: "", unit: "", unitPrice: "" });
-      setShowModal(false); // Close the modal after saving
+      setShowModal(false);
     }
   };
 
@@ -87,33 +84,10 @@ function Tracker() {
 
     setIsEditing(true);
     setCurrentIndex(index);
-    setShowModal(true); // Open modal for editing
+    setShowModal(true);
   };
 
   const totalExpenses = expenses.reduce((total, exp) => total + exp.amount, 0);
-
-  const generatePDF = () => {
-    const doc = new jsPDF();
-    doc.text("Expense Report", 20, 10);
-    doc.text(`Total Budget: Rs${budget}`, 20, 20);
-    doc.text(`Total Expenses: Rs${totalExpenses}`, 20, 30);
-    doc.text(`Remaining Budget: Rs${budget - totalExpenses}`, 20, 40);
-
-    const tableColumn = ["Title", "Amount", "Date"];
-    const tableRows = expenses.map((expense) => [
-      expense.title,
-      `Rs${expense.amount}`,
-      expense.date,
-    ]);
-
-    autoTable(doc, {
-      head: [tableColumn],
-      body: tableRows,
-      startY: 50,
-    });
-
-    doc.save("expense_report.pdf");
-  };
 
   return (
     <div className="App">
@@ -190,7 +164,7 @@ function Tracker() {
         </ul>
       </div>
 
-      <Button onClick={generatePDF} text="Download PDF" style={{ marginTop: '20px' }} />
+      <PDFViewer budget={budget} totalExpenses={totalExpenses} expenses={expenses} />
     </div>
   );
 }
