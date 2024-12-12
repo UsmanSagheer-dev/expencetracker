@@ -1,4 +1,4 @@
-import React, { useState, useEffect,StyleSheet } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from '../button/Button';
 import PDFViewer from '../pdfViewer/PDFViewer';
 
@@ -175,10 +175,10 @@ function Tracker() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   budgetSection: {
     margin: '20px 0',
-    backgroundColor:'gray'
+    backgroundColor: 'gray'
   },
   input: {
     padding: '10px',
@@ -232,6 +232,6 @@ const styles = StyleSheet.create({
   expenseItem: {
     marginBottom: '10px',
   },
-});
+};
 
 export default Tracker;
