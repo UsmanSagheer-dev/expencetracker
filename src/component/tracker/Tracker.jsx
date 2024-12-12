@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Button from '../button/Button';
 import PDFViewer from '../pdfViewer/PDFViewer';
 
+
 function Tracker() {
   const [budget, setBudget] = useState(0);
   const [expenses, setExpenses] = useState([]);
@@ -92,26 +93,27 @@ function Tracker() {
   return (
     <div className="App">
       <h1>Daily Expense Tracker</h1>
-      <div className="budget-section">
+      <div className={(styles.budgetSection)}>
         <h2>Set Your Daily Budget</h2>
         <input
           type="number"
           value={budget}
           onChange={handleBudgetChange}
           placeholder="Enter your budget"
+          className={(styles.input)}
         />
       </div>
-      <div className="budget-info">
-        <p style={{color:'red',fontFamily:'monospace',fontSize:'25px'}}><strong>Total Budget: </strong> Rs{budget}</p>
-        <p style={{color:'blue',fontFamily:'fantasy',fontSize:'25px'}}><strong>Total Expenses: </strong> Rs{totalExpenses}</p>
-        <p style={{color:"grey",fontFamily:'revert-layer',fontSize:'25px'}}><strong>Remaining Budget: </strong> Rs{budget - totalExpenses}</p>
+      <div className={(styles.budgetInfo)}>
+        <p className={(styles.totalBudget)}><strong>Total Budget: </strong> Rs{budget}</p>
+        <p className={(styles.totalExpenses)}><strong>Total Expenses: </strong> Rs{totalExpenses}</p>
+        <p className={(styles.remainingBudget)}><strong>Remaining Budget: </strong> Rs{budget - totalExpenses}</p>
       </div>
 
       <Button onClick={() => setShowModal(true)} text={isEditing ? "Edit Expense" : "Add Expense"} />
 
       {showModal && (
-        <div className="modal">
-          <div className="modal-content">
+        <div className={(styles.modal)}>
+          <div className={(styles.modalContent)}>
             <h2>{isEditing ? "Edit Expense" : "Add Expense"}</h2>
             <label>Enter title</label><br />
             <input
@@ -120,6 +122,7 @@ function Tracker() {
               value={newExpense.title}
               onChange={handleExpenseChange}
               placeholder="Expense Title"
+              className={(styles.input)}
             /><br />
             <label>Enter quantity</label><br />
             <input
@@ -128,6 +131,7 @@ function Tracker() {
               value={newExpense.quantity}
               onChange={handleExpenseChange}
               placeholder="Quantity"
+              className={(styles.input)}
             /><br />
             <label>Enter unit</label><br />
             <input
@@ -136,6 +140,7 @@ function Tracker() {
               value={newExpense.unit}
               onChange={handleExpenseChange}
               placeholder="Unit (kg, liters, etc.)"
+              className={(styles.input)}
             /><br />
             <label>Enter unit price</label><br />
             <input
@@ -144,6 +149,7 @@ function Tracker() {
               value={newExpense.unitPrice}
               onChange={handleExpenseChange}
               placeholder="Unit Price (Rs per unit)"
+              className={(styles.input)}
             /><br />
             <Button onClick={addOrUpdateExpense} text={isEditing ? "Update Expense" : "Add Expense"} />
             <Button onClick={() => setShowModal(false)} text="Close" />
@@ -151,11 +157,11 @@ function Tracker() {
         </div>
       )}
 
-      <div className="expense-list">
+      <div className={(styles.expenseList)}>
         <h2>Expense List</h2>
         <ul>
           {expenses.map((expense, index) => (
-            <li key={index}>
+            <li key={index} className={(styles.expenseItem)}>
               {expense.title} - Rs{expense.amount} (Date: {expense.date}){" "}
               <Button onClick={() => editExpense(index)} text="Edit" style={{ marginLeft: '5px' }} />
               <Button onClick={() => deleteExpense(index)} text="Delete" style={{ marginLeft: '5px' }} />
@@ -168,5 +174,62 @@ function Tracker() {
     </div>
   );
 }
+
+const styles = StyleSheet.create({
+  budgetSection: {
+    margin: '20px 0',
+  },
+  input: {
+    padding: '10px',
+    margin: '10px 0',
+    borderRadius: '5px',
+    border: '1px solid #ccc',
+    width: '100%',
+    maxWidth: '300px',
+  },
+  budgetInfo: {
+    marginBottom: '20px',
+  },
+  totalBudget: {
+    color: 'red',
+    fontFamily: 'monospace',
+    fontSize: '25px',
+  },
+  totalExpenses: {
+    color: 'blue',
+    fontFamily: 'fantasy',
+    fontSize: '25px',
+  },
+  remainingBudget: {
+    color: 'grey',
+    fontFamily: 'revert-layer',
+    fontSize: '25px',
+  },
+  modal: {
+    position: 'fixed',
+    top: '0',
+    left: '0',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    background: '#fff',
+    padding: '20px 50px',
+    borderRadius: '8px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+    width: '90%',
+    maxWidth: '400px',
+  },
+  expenseList: {
+    marginTop: '20px',
+  },
+  expenseItem: {
+    marginBottom: '10px',
+  },
+});
 
 export default Tracker;
