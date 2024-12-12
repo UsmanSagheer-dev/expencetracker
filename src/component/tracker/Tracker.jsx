@@ -178,6 +178,7 @@ function Tracker() {
 const styles = StyleSheet.create({
   budgetSection: {
     margin: '20px 0',
+    backgroundColor:'gray'
   },
   input: {
     padding: '10px',
@@ -196,7 +197,7 @@ const styles = StyleSheet.create({
     fontSize: '25px',
   },
   totalExpenses: {
-    color: 'blue',
+    color: 'black',
     fontFamily: 'fantasy',
     fontSize: '25px',
   },
@@ -215,6 +216,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+    margin:"10px"
   },
   modalContent: {
     background: '#fff',
