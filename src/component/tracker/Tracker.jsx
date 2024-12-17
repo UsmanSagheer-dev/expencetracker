@@ -90,7 +90,7 @@ function Tracker() {
   const totalExpenses = expenses.reduce((total, exp) => total + exp.amount, 0);
 
   return (
-    <div className="App">
+    <div className="App" >
       <h1>Daily Expense Tracker</h1>
       <div className="budget-section">
         <h2>Set Your Daily Budget</h2>
