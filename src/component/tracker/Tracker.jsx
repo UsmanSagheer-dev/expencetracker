@@ -5,28 +5,39 @@ import PDFViewer from '../pdfViewer/PDFViewer';
 function Tracker() {
   const [budget, setBudget] = useState(0);
   const [expenses, setExpenses] = useState([]);
+  const [loans, setLoans] = useState([]);
   const [newExpense, setNewExpense] = useState({
     title: "",
     quantity: "",
     unit: "",
     unitPrice: "",
   });
+  const [newLoan, setNewLoan] = useState({
+    personName: "",
+    amount: "",
+    type: "borrowed",
+    date: new Date().toLocaleDateString()
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showLoanModal, setShowLoanModal] = useState(false);
 
   useEffect(() => {
     const savedBudget = localStorage.getItem("budget");
     const savedExpenses = localStorage.getItem("expenses");
+    const savedLoans = localStorage.getItem("loans");
 
     if (savedBudget) setBudget(Number(JSON.parse(savedBudget)));
     if (savedExpenses) setExpenses(JSON.parse(savedExpenses));
+    if (savedLoans) setLoans(JSON.parse(savedLoans));
   }, []);
 
   useEffect(() => {
     if (budget !== 0) localStorage.setItem("budget", JSON.stringify(budget));
     if (expenses.length > 0) localStorage.setItem("expenses", JSON.stringify(expenses));
-  }, [budget, expenses]);
+    if (loans.length > 0) localStorage.setItem("loans", JSON.stringify(loans));
+  }, [budget, expenses, loans]);
 
   const handleBudgetChange = (e) => {
     setBudget(Number(e.target.value));
@@ -34,6 +45,10 @@ function Tracker() {
 
   const handleExpenseChange = (e) => {
     setNewExpense({ ...newExpense, [e.target.name]: e.target.value });
+  };
+
+  const handleLoanChange = (e) => {
+    setNewLoan({ ...newLoan, [e.target.name]: e.target.value });
   };
 
   const addOrUpdateExpense = () => {
@@ -63,9 +78,30 @@ function Tracker() {
     }
   };
 
+  const addLoan = () => {
+    if (newLoan.personName && newLoan.amount) {
+      setLoans([...loans, {
+        ...newLoan,
+        id: Date.now(),
+        date: new Date().toLocaleDateString()
+      }]);
+      setNewLoan({
+        personName: "",
+        amount: "",
+        type: "borrowed",
+        date: new Date().toLocaleDateString()
+      });
+      setShowLoanModal(false);
+    }
+  };
+
   const deleteExpense = (index) => {
     const updatedExpenses = expenses.filter((_, i) => i !== index);
     setExpenses(updatedExpenses);
+  };
+
+  const deleteLoan = (id) => {
+    setLoans(loans.filter(loan => loan.id !== id));
   };
 
   const editExpense = (index) => {
@@ -88,9 +124,15 @@ function Tracker() {
   };
 
   const totalExpenses = expenses.reduce((total, exp) => total + exp.amount, 0);
+  const totalBorrowed = loans
+    .filter(loan => loan.type === "borrowed")
+    .reduce((total, loan) => total + Number(loan.amount), 0);
+  const totalLent = loans
+    .filter(loan => loan.type === "lent")
+    .reduce((total, loan) => total + Number(loan.amount), 0);
 
   return (
-    <div className="App" >
+    <div className="App">
       <h1>Daily Expense Tracker</h1>
       <div className="budget-section">
         <h2>Set Your Daily Budget</h2>
@@ -109,6 +151,7 @@ function Tracker() {
           }}
         />
       </div>
+
       <div className="budget-info">
         <p style={{ color: 'red', fontFamily: 'monospace', fontSize: '25px' }}><strong>Total Budget: </strong> Rs{budget}</p>
         <p style={{ color: 'blue', fontFamily: 'fantasy', fontSize: '25px' }}><strong>Total Expenses: </strong> Rs{totalExpenses}</p>
@@ -116,6 +159,7 @@ function Tracker() {
       </div>
 
       <Button onClick={() => setShowModal(true)} text={isEditing ? "Edit Expense" : "Add Expense"} />
+      <Button onClick={() => setShowLoanModal(true)} text="Add Money Record" style={{ marginLeft: '10px' }} />
 
       {showModal && (
         <div className="modal" style={{
@@ -128,7 +172,6 @@ function Tracker() {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-       
         }}>
           <div className="modal-content" style={{
             background: '#fff',
@@ -205,6 +248,79 @@ function Tracker() {
         </div>
       )}
 
+      {showLoanModal && (
+        <div className="modal" style={{
+          position: 'fixed',
+          top: '0',
+          left: '0',
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+          <div className="modal-content" style={{
+            background: '#fff',
+            padding: '20px 50px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+            width: '90%',
+            maxWidth: '400px',
+          }}>
+            <h2>Add Money Record</h2>
+            <label>Person Name</label><br />
+            <input
+              type="text"
+              name="personName"
+              value={newLoan.personName}
+              onChange={handleLoanChange}
+              placeholder="Enter person name"
+              style={{
+                padding: '10px',
+                margin: '10px 0',
+                borderRadius: '5px',
+                border: '1px solid #ccc',
+                width: '100%',
+              }}
+            /><br />
+            <label>Amount</label><br />
+            <input
+              type="number"
+              name="amount"
+              value={newLoan.amount}
+              onChange={handleLoanChange}
+              placeholder="Enter amount"
+              style={{
+                padding: '10px',
+                margin: '10px 0',
+                borderRadius: '5px',
+                border: '1px solid #ccc',
+                width: '100%',
+              }}
+            /><br />
+            <label>Type</label><br />
+            <select
+              name="type"
+              value={newLoan.type}
+              onChange={handleLoanChange}
+              style={{
+                padding: '10px',
+                margin: '10px 0',
+                borderRadius: '5px',
+                border: '1px solid #ccc',
+                width: '100%',
+              }}
+            >
+              <option value="borrowed">Money Taken From</option>
+              <option value="lent">Money Given To</option>
+            </select><br />
+            <Button onClick={addLoan} text="Add Record" />
+            <Button onClick={() => setShowLoanModal(false)} text="Close" />
+          </div>
+        </div>
+      )}
+
       <div className="expense-list">
         <h2>Expense List</h2>
         <ul>
@@ -218,11 +334,37 @@ function Tracker() {
         </ul>
       </div>
 
-      <PDFViewer budget={budget} totalExpenses={totalExpenses} expenses={expenses} />
+      <div className="loan-list" style={{ marginTop: '20px' }}>
+        <h2>Money Records</h2>
+        <div className="summary" style={{ margin: '20px 0' }}>
+          <p style={{ color: 'red', fontFamily: 'monospace', fontSize: '20px' }}><strong>Total Money Taken: </strong> Rs{totalBorrowed}</p>
+          <p style={{ color: 'green', fontFamily: 'monospace', fontSize: '20px' }}><strong>Total Money Given: </strong> Rs{totalLent}</p>
+        </div>
+        <ul>
+          {loans.map((loan) => (
+            <li key={loan.id} style={{ 
+              marginBottom: '10px',
+              padding: '10px',
+              borderRadius: '5px',
+              border: '1px solid #ccc'
+            }}>
+              <strong>{loan.personName}</strong> - Rs{loan.amount} 
+              ({loan.type === "borrowed" ? "Money Taken From" : "Money Given To"})
+              <br />
+              Date: {loan.date}
+              <Button 
+                onClick={() => deleteLoan(loan.id)} 
+                text="Delete" 
+                style={{ marginLeft: '5px' }}
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <PDFViewer budget={budget} totalExpenses={totalExpenses} expenses={expenses} loans={loans} />
     </div>
   );
 }
 
 export default Tracker;
-
-
