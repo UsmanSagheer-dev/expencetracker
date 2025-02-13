@@ -3,6 +3,7 @@ import Button from '../button/Button';
 import PDFViewer from '../pdfViewer/PDFViewer';
 
 function Tracker() {
+  // Existing state
   const [budget, setBudget] = useState(0);
   const [expenses, setExpenses] = useState([]);
   const [loans, setLoans] = useState([]);
@@ -23,21 +24,35 @@ function Tracker() {
   const [showModal, setShowModal] = useState(false);
   const [showLoanModal, setShowLoanModal] = useState(false);
 
+  // New state for company records
+  const [companyRecords, setCompanyRecords] = useState([]);
+  const [showCompanyModal, setShowCompanyModal] = useState(false);
+  const [newCompanyRecord, setNewCompanyRecord] = useState({
+    amount: "",
+    description: "",
+    date: new Date().toLocaleDateString()
+  });
+
+  // Load saved data
   useEffect(() => {
     const savedBudget = localStorage.getItem("budget");
     const savedExpenses = localStorage.getItem("expenses");
     const savedLoans = localStorage.getItem("loans");
+    const savedCompanyRecords = localStorage.getItem("companyRecords");
 
     if (savedBudget) setBudget(Number(JSON.parse(savedBudget)));
     if (savedExpenses) setExpenses(JSON.parse(savedExpenses));
     if (savedLoans) setLoans(JSON.parse(savedLoans));
+    if (savedCompanyRecords) setCompanyRecords(JSON.parse(savedCompanyRecords));
   }, []);
 
+  // Save data
   useEffect(() => {
     if (budget !== 0) localStorage.setItem("budget", JSON.stringify(budget));
     if (expenses.length > 0) localStorage.setItem("expenses", JSON.stringify(expenses));
     if (loans.length > 0) localStorage.setItem("loans", JSON.stringify(loans));
-  }, [budget, expenses, loans]);
+    if (companyRecords.length > 0) localStorage.setItem("companyRecords", JSON.stringify(companyRecords));
+  }, [budget, expenses, loans, companyRecords]);
 
   const handleBudgetChange = (e) => {
     setBudget(Number(e.target.value));
@@ -123,6 +138,7 @@ function Tracker() {
     setShowModal(true);
   };
 
+  // Calculate totals
   const totalExpenses = expenses.reduce((total, exp) => total + exp.amount, 0);
   const totalBorrowed = loans
     .filter(loan => loan.type === "borrowed")
@@ -130,6 +146,35 @@ function Tracker() {
   const totalLent = loans
     .filter(loan => loan.type === "lent")
     .reduce((total, loan) => total + Number(loan.amount), 0);
+
+  // New handlers for company records
+  const handleCompanyRecordChange = (e) => {
+    setNewCompanyRecord({ ...newCompanyRecord, [e.target.name]: e.target.value });
+  };
+
+  const addCompanyRecord = () => {
+    if (newCompanyRecord.amount && newCompanyRecord.description) {
+      setCompanyRecords([...companyRecords, {
+        ...newCompanyRecord,
+        id: Date.now(),
+        date: new Date().toLocaleDateString()
+      }]);
+      setNewCompanyRecord({
+        amount: "",
+        description: "",
+        date: new Date().toLocaleDateString()
+      });
+      setShowCompanyModal(false);
+    }
+  };
+
+  const deleteCompanyRecord = (id) => {
+    setCompanyRecords(companyRecords.filter(record => record.id !== id));
+  };
+
+  const totalCompanyMoney = companyRecords.reduce((total, record) => 
+    total + Number(record.amount), 0
+  );
 
   return (
     <div className="App">
@@ -160,6 +205,11 @@ function Tracker() {
 
       <Button onClick={() => setShowModal(true)} text={isEditing ? "Edit Expense" : "Add Expense"} />
       <Button onClick={() => setShowLoanModal(true)} text="Add Money Record" style={{ marginLeft: '10px' }} />
+      <Button 
+        onClick={() => setShowCompanyModal(true)} 
+        text="Add Company Record" 
+        style={{ marginLeft: '10px' }}
+      />
 
       {showModal && (
         <div className="modal" style={{
@@ -321,6 +371,64 @@ function Tracker() {
         </div>
       )}
 
+      {/* New modal for company records */}
+      {showCompanyModal && (
+        <div className="modal" style={{
+          position: 'fixed',
+          top: '0',
+          left: '0',
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+          <div className="modal-content" style={{
+            background: '#fff',
+            padding: '20px 50px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+            width: '90%',
+            maxWidth: '400px',
+          }}>
+            <h2>Add Company Record</h2>
+            <label>Amount</label><br />
+            <input
+              type="number"
+              name="amount"
+              value={newCompanyRecord.amount}
+              onChange={handleCompanyRecordChange}
+              placeholder="Enter amount"
+              style={{
+                padding: '10px',
+                margin: '10px 0',
+                borderRadius: '5px',
+                border: '1px solid #ccc',
+                width: '100%',
+              }}
+            /><br />
+            <label>Description</label><br />
+            <input
+              type="text"
+              name="description"
+              value={newCompanyRecord.description}
+              onChange={handleCompanyRecordChange}
+              placeholder="Enter description"
+              style={{
+                padding: '10px',
+                margin: '10px 0',
+                borderRadius: '5px',
+                border: '1px solid #ccc',
+                width: '100%',
+              }}
+            /><br />
+            <Button onClick={addCompanyRecord} text="Add Record" />
+            <Button onClick={() => setShowCompanyModal(false)} text="Close" />
+          </div>
+        </div>
+      )}
+
       <div className="expense-list">
         <h2>Expense List</h2>
         <ul>
@@ -362,7 +470,42 @@ function Tracker() {
         </ul>
       </div>
 
-      <PDFViewer budget={budget} totalExpenses={totalExpenses} expenses={expenses} loans={loans} />
+      <div className="company-records" style={{ marginTop: '20px' }}>
+        <h2>Company Records</h2>
+        <div className="summary" style={{ margin: '20px 0' }}>
+          <p style={{ color: 'purple', fontFamily: 'monospace', fontSize: '20px' }}>
+            <strong>Total Company Records: </strong> Rs{totalCompanyMoney}
+          </p>
+        </div>
+        <ul>
+          {companyRecords.map((record) => (
+            <li key={record.id} style={{ 
+              marginBottom: '10px',
+              padding: '10px',
+              borderRadius: '5px',
+              border: '1px solid #ccc'
+            }}>
+              <strong>Rs{record.amount}</strong> - {record.description}
+              <br />
+              Date: {record.date}
+              <Button 
+                onClick={() => deleteCompanyRecord(record.id)} 
+                text="Delete" 
+                style={{ marginLeft: '5px' }}
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <PDFViewer 
+        budget={budget} 
+        totalExpenses={totalExpenses} 
+        expenses={expenses} 
+        loans={loans}
+        companyRecords={companyRecords}
+        totalCompanyMoney={totalCompanyMoney}
+      />
     </div>
   );
 }

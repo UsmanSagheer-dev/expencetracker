@@ -3,99 +3,178 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import Button from '../button/Button';
 
-function PDFViewer({ budget, totalExpenses, expenses, loans = [] }) {
+function PDFViewer({ 
+  budget, 
+  totalExpenses, 
+  expenses, 
+  loans = [], 
+  companyRecords = [],
+  totalCompanyMoney 
+}) {
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    if (isNaN(date)) return 'Invalid Date';
+    return `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getFullYear()}`;
+  };
+
   const generatePDF = () => {
     const doc = new jsPDF();
-    
-    // Add main title
+    const pageWidth = doc.internal.pageSize.width;
+    let currentY = 10;
+
+    // Header
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.setFillColor(41, 128, 185);
+    doc.rect(0, 0, pageWidth, 20, 'F');
+    doc.text("Expense Tracker", 20, 15);
+    doc.setFontSize(12);
+    doc.text(`Report Date: ${formatDate(new Date())}`, pageWidth - 20, 15, { align: 'right' });
+    doc.setTextColor(0, 0, 0);
+
+    currentY = 30;
+
+    // Main Title
     doc.setFontSize(20);
-    doc.text("Daily Expense Tracker Report", 20, 10);
+    doc.setFont(undefined, 'bold');
+    doc.text("Daily Expense Tracker Report", pageWidth / 2, currentY, { align: 'center' });
+    currentY += 20;
 
-    // Add budget summary
+    // Budget Summary
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text("Budget Summary", 20, currentY);
+    currentY += 10;
     doc.setFontSize(12);
-    doc.setTextColor(255, 0, 0); // Red color for Total Budget
-    doc.text(`Total Budget: Rs${budget}`, 20, 30);
-    
-    doc.setTextColor(0, 0, 255); // Blue color for Total Expenses
-    doc.text(`Total Expenses: Rs${totalExpenses}`, 20, 40);
-    
-    doc.setTextColor(128, 128, 128); // Grey color for Remaining Budget
-    doc.text(`Remaining Budget: Rs${budget - totalExpenses}`, 20, 50);
-    
-    doc.setTextColor(0, 0, 0); // Reset to black color
+    doc.setFont(undefined, 'normal');
+    doc.text(`Total Budget: Rs${Number(budget).toFixed(2)}`, 20, currentY);
+    currentY += 10;
+    doc.text(`Total Expenses: Rs${Number(totalExpenses).toFixed(2)}`, 20, currentY);
+    currentY += 10;
+    doc.text(`Remaining Budget: Rs${(Number(budget) - Number(totalExpenses)).toFixed(2)}`, 20, currentY);
+    currentY += 15;
 
-    // Add Expense List title
-    doc.setFontSize(16);
-    doc.text("Expense List", 20, 70);
+    // Expense List Table
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text("Expense List", 20, currentY);
+    currentY += 10;
 
-    // Add expense table
-    const expenseTableColumn = ["Title", "Amount", "Date"];
-    const expenseTableRows = expenses.map((expense) => [
-      expense.title,
-      `Rs${expense.amount}`,
-      expense.date,
-    ]);
+    const expenseColumns = ["Title", "Amount", "Date"];
+    const expenseData = expenses.length > 0 
+      ? expenses.map(expense => [
+          expense.title,
+          `Rs${Number(expense.amount).toFixed(2)}`,
+          formatDate(expense.date)
+        ])
+      : [['No expenses recorded', '', '']];
 
     autoTable(doc, {
-      head: [expenseTableColumn],
-      body: expenseTableRows,
-      startY: 80,
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [41, 128, 185] }, // Blue header
+      head: [expenseColumns],
+      body: expenseData,
+      startY: currentY,
+      theme: 'grid',
+      headStyles: { 
+        fillColor: [41, 128, 185],
+        textColor: 255,
+        fontSize: 12
+      },
+      bodyStyles: { fontSize: 10 },
+      alternateRowStyles: { fillColor: [240, 240, 240] }
     });
 
-    // Get the final Y position after the expense table
-    const finalY = doc.lastAutoTable.finalY || 80;
+    currentY = doc.lastAutoTable.finalY + 10;
 
-    // Add Money Records title
-    doc.setFontSize(16);
-    doc.text("Money Records", 20, finalY + 20);
+    // Loan Records
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text("Money Records", 20, currentY);
+    currentY += 10;
 
-    // Add loan summary
-    doc.setFontSize(12);
-    const totalBorrowed = loans
-      .filter(loan => loan.type === "borrowed")
-      .reduce((total, loan) => total + Number(loan.amount), 0);
-    
-    const totalLent = loans
-      .filter(loan => loan.type === "lent")
-      .reduce((total, loan) => total + Number(loan.amount), 0);
-
-    doc.setTextColor(255, 0, 0); // Red for money taken
-    doc.text(`Total Money Taken: Rs${totalBorrowed}`, 20, finalY + 35);
-    
-    doc.setTextColor(0, 128, 0); // Green for money given
-    doc.text(`Total Money Given: Rs${totalLent}`, 20, finalY + 45);
-    
-    doc.setTextColor(0, 0, 0); // Reset to black
-
-    // Add loan records table
-    const loanTableColumn = ["Person Name", "Amount", "Type", "Date"];
-    const loanTableRows = loans.map((loan) => [
-      loan.personName,
-      `Rs${loan.amount}`,
-      loan.type === "borrowed" ? "Money Taken From" : "Money Given To",
-      loan.date,
-    ]);
+    const loanColumns = ["Person Name", "Amount", "Type", "Date"];
+    const loanData = loans.length > 0
+      ? loans.map(loan => [
+          loan.personName,
+          `Rs${Number(loan.amount).toFixed(2)}`,
+          loan.type === "borrowed" ? "Money Taken From" : "Money Given To",
+          formatDate(loan.date)
+        ])
+      : [['No loan records', '', '', '']];
 
     autoTable(doc, {
-      head: [loanTableColumn],
-      body: loanTableRows,
-      startY: finalY + 55,
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [41, 128, 185] }, // Blue header
+      head: [loanColumns],
+      body: loanData,
+      startY: currentY,
+      theme: 'grid',
+      headStyles: { 
+        fillColor: [41, 128, 185],
+        textColor: 255,
+        fontSize: 12
+      },
+      bodyStyles: { fontSize: 10 },
+      alternateRowStyles: { fillColor: [240, 240, 240] }
     });
 
-    // Add footer with date
-    const pageHeight = doc.internal.pageSize.height;
-    doc.setFontSize(10);
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, pageHeight - 10);
+    currentY = doc.lastAutoTable.finalY + 10;
 
-    doc.save("daily_expense_report.pdf");
+    // Company Records Section
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text("Company Records", 20, currentY);
+    currentY += 10;
+    
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Total Company Money: Rs${totalCompanyMoney.toFixed(2)}`, 20, currentY);
+    currentY += 15;
+
+    const companyColumns = ["Amount", "Description", "Date"];
+    const companyData = companyRecords.length > 0
+      ? companyRecords.map(record => [
+          `Rs${Number(record.amount).toFixed(2)}`,
+          record.description,
+          formatDate(record.date)
+        ])
+      : [['No company records', '', '']];
+
+    autoTable(doc, {
+      head: [companyColumns],
+      body: companyData,
+      startY: currentY,
+      theme: 'grid',
+      headStyles: { 
+        fillColor: [41, 128, 185],
+        textColor: 255,
+        fontSize: 12
+      },
+      bodyStyles: { fontSize: 10 },
+      alternateRowStyles: { fillColor: [240, 240, 240] }
+    });
+
+    // Footer
+    const pageCount = doc.getNumberOfPages();
+    for(let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(10);
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth - 20, doc.internal.pageSize.height - 10, { align: 'right' });
+      doc.text(`Generated on: ${formatDate(new Date())}`, 20, doc.internal.pageSize.height - 10);
+    }
+
+    doc.save(`expense_report_${formatDate(new Date()).replace(/-/g, '_')}.pdf`);
   };
 
   return (
-    <Button onClick={generatePDF} text="Download PDF" style={{ marginTop: '20px' }} />
+    <Button 
+      onClick={generatePDF} 
+      text="Download PDF Report" 
+      style={{ 
+        marginTop: '20px',
+        backgroundColor: '#2980b9',
+        color: 'white',
+        padding: '10px 20px'
+      }} 
+    />
   );
 }
 
