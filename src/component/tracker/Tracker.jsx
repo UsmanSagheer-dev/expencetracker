@@ -23,8 +23,6 @@ function Tracker() {
   const [currentIndex, setCurrentIndex] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showLoanModal, setShowLoanModal] = useState(false);
-
-  // New state for company records
   const [companyRecords, setCompanyRecords] = useState([]);
   const [showCompanyModal, setShowCompanyModal] = useState(false);
   const [newCompanyRecord, setNewCompanyRecord] = useState({
@@ -32,6 +30,13 @@ function Tracker() {
     description: "",
     date: new Date().toLocaleDateString()
   });
+
+  // New state for selection and deletion
+  const [selectedExpenses, setSelectedExpenses] = useState([]);
+  const [selectedLoans, setSelectedLoans] = useState([]);
+  const [selectedCompanyRecords, setSelectedCompanyRecords] = useState([]);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [deleteType, setDeleteType] = useState(null);
 
   // Load saved data
   useEffect(() => {
@@ -53,6 +58,76 @@ function Tracker() {
     if (loans.length > 0) localStorage.setItem("loans", JSON.stringify(loans));
     if (companyRecords.length > 0) localStorage.setItem("companyRecords", JSON.stringify(companyRecords));
   }, [budget, expenses, loans, companyRecords]);
+
+  // Handle selections
+  const handleSelectExpense = (index) => {
+    if (selectedExpenses.includes(index)) {
+      setSelectedExpenses(selectedExpenses.filter(i => i !== index));
+    } else {
+      setSelectedExpenses([...selectedExpenses, index]);
+    }
+  };
+
+  const handleSelectLoan = (id) => {
+    if (selectedLoans.includes(id)) {
+      setSelectedLoans(selectedLoans.filter(i => i !== id));
+    } else {
+      setSelectedLoans([...selectedLoans, id]);
+    }
+  };
+
+  const handleSelectCompanyRecord = (id) => {
+    if (selectedCompanyRecords.includes(id)) {
+      setSelectedCompanyRecords(selectedCompanyRecords.filter(i => i !== id));
+    } else {
+      setSelectedCompanyRecords([...selectedCompanyRecords, id]);
+    }
+  };
+
+  const handleSelectAllExpenses = () => {
+    if (selectedExpenses.length === expenses.length) {
+      setSelectedExpenses([]);
+    } else {
+      setSelectedExpenses(expenses.map((_, index) => index));
+    }
+  };
+
+  const handleSelectAllLoans = () => {
+    if (selectedLoans.length === loans.length) {
+      setSelectedLoans([]);
+    } else {
+      setSelectedLoans(loans.map(loan => loan.id));
+    }
+  };
+
+  const handleSelectAllCompanyRecords = () => {
+    if (selectedCompanyRecords.length === companyRecords.length) {
+      setSelectedCompanyRecords([]);
+    } else {
+      setSelectedCompanyRecords(companyRecords.map(record => record.id));
+    }
+  };
+
+  // Handle delete confirmation
+  const confirmDelete = (type) => {
+    setDeleteType(type);
+    setShowConfirmDelete(true);
+  };
+
+  const handleDeleteConfirmed = () => {
+    if (deleteType === 'expenses') {
+      setExpenses(expenses.filter((_, index) => !selectedExpenses.includes(index)));
+      setSelectedExpenses([]);
+    } else if (deleteType === 'loans') {
+      setLoans(loans.filter(loan => !selectedLoans.includes(loan.id)));
+      setSelectedLoans([]);
+    } else if (deleteType === 'companyRecords') {
+      setCompanyRecords(companyRecords.filter(record => !selectedCompanyRecords.includes(record.id)));
+      setSelectedCompanyRecords([]);
+    }
+    setShowConfirmDelete(false);
+    setDeleteType(null);
+  };
 
   const handleBudgetChange = (e) => {
     setBudget(Number(e.target.value));
@@ -138,16 +213,6 @@ function Tracker() {
     setShowModal(true);
   };
 
-  // Calculate totals
-  const totalExpenses = expenses.reduce((total, exp) => total + exp.amount, 0);
-  const totalBorrowed = loans
-    .filter(loan => loan.type === "borrowed")
-    .reduce((total, loan) => total + Number(loan.amount), 0);
-  const totalLent = loans
-    .filter(loan => loan.type === "lent")
-    .reduce((total, loan) => total + Number(loan.amount), 0);
-
-  // New handlers for company records
   const handleCompanyRecordChange = (e) => {
     setNewCompanyRecord({ ...newCompanyRecord, [e.target.name]: e.target.value });
   };
@@ -172,6 +237,14 @@ function Tracker() {
     setCompanyRecords(companyRecords.filter(record => record.id !== id));
   };
 
+  // Calculate totals
+  const totalExpenses = expenses.reduce((total, exp) => total + exp.amount, 0);
+  const totalBorrowed = loans
+    .filter(loan => loan.type === "borrowed")
+    .reduce((total, loan) => total + Number(loan.amount), 0);
+  const totalLent = loans
+    .filter(loan => loan.type === "lent")
+    .reduce((total, loan) => total + Number(loan.amount), 0);
   const totalCompanyMoney = companyRecords.reduce((total, record) => 
     total + Number(record.amount), 0
   );
@@ -371,7 +444,6 @@ function Tracker() {
         </div>
       )}
 
-      {/* New modal for company records */}
       {showCompanyModal && (
         <div className="modal" style={{
           position: 'fixed',
@@ -429,11 +501,72 @@ function Tracker() {
         </div>
       )}
 
+      {showConfirmDelete && (
+        <div className="modal" style={{
+          position: 'fixed',
+          top: '0',
+          left: '0',
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+          <div className="modal-content" style={{
+            background: '#fff',
+            padding: '20px 50px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+            width: '90%',
+            maxWidth: '400px',
+            textAlign: 'center'
+          }}>
+            <h2>Confirm Deletion</h2>
+            <p>Are you sure you want to delete the selected {deleteType}?</p>
+            <Button 
+              onClick={handleDeleteConfirmed} 
+              text="Confirm Delete" 
+              style={{ backgroundColor: '#ff4444', marginRight: '10px' }}
+            />
+            <Button 
+              onClick={() => setShowConfirmDelete(false)} 
+              text="Cancel"
+            />
+          </div>
+        </div>
+      )}
+
       <div className="expense-list">
         <h2>Expense List</h2>
+        {expenses.length > 0 && (
+          <div style={{ marginBottom: '10px' }}>
+            <Button 
+              onClick={handleSelectAllExpenses} 
+              text={selectedExpenses.length === expenses.length ? "Deselect All" : "Select All"} 
+            />
+            {selectedExpenses.length > 0 && (
+              <Button 
+                onClick={() => confirmDelete('expenses')} 
+                text="Delete Selected" 
+                style={{ marginLeft: '10px', backgroundColor: '#ff4444' }}
+              />
+            )}
+          </div>
+        )}
         <ul>
           {expenses.map((expense, index) => (
-            <li key={index} style={{ marginBottom: '10px' }}>
+            <li key={index} style={{ 
+              marginBottom: '10px',
+              display: 'flex',
+              alignItems: 'center'
+            }}>
+              <input
+                type="checkbox"
+                checked={selectedExpenses.includes(index)}
+                onChange={() => handleSelectExpense(index)}
+                style={{ marginRight: '10px' }}
+              />
               {expense.title} - Rs{expense.amount} (Date: {expense.date}){" "}
               <Button onClick={() => editExpense(index)} text="Edit" style={{ marginLeft: '5px' }} />
               <Button onClick={() => deleteExpense(index)} text="Delete" style={{ marginLeft: '5px' }} />
@@ -448,18 +581,43 @@ function Tracker() {
           <p style={{ color: 'red', fontFamily: 'monospace', fontSize: '20px' }}><strong>Total Money Taken: </strong> Rs{totalBorrowed}</p>
           <p style={{ color: 'green', fontFamily: 'monospace', fontSize: '20px' }}><strong>Total Money Given: </strong> Rs{totalLent}</p>
         </div>
+        {loans.length > 0 && (
+          <div style={{ marginBottom: '10px' }}>
+            <Button 
+              onClick={handleSelectAllLoans} 
+              text={selectedLoans.length === loans.length ? "Deselect All" : "Select All"} 
+            />
+            {selectedLoans.length > 0 && (
+              <Button 
+                onClick={() => confirmDelete('loans')} 
+                text="Delete Selected" 
+                style={{ marginLeft: '10px', backgroundColor: '#ff4444' }}
+              />
+            )}
+          </div>
+        )}
         <ul>
           {loans.map((loan) => (
             <li key={loan.id} style={{ 
               marginBottom: '10px',
               padding: '10px',
               borderRadius: '5px',
-              border: '1px solid #ccc'
+              border: '1px solid #ccc',
+              display: 'flex',
+              alignItems: 'center'
             }}>
-              <strong>{loan.personName}</strong> - Rs{loan.amount} 
-              ({loan.type === "borrowed" ? "Money Taken From" : "Money Given To"})
-              <br />
-              Date: {loan.date}
+              <input
+                type="checkbox"
+                checked={selectedLoans.includes(loan.id)}
+                onChange={() => handleSelectLoan(loan.id)}
+                style={{ marginRight: '10px' }}
+              />
+              <div>
+                <strong>{loan.personName}</strong> - Rs{loan.amount} 
+                ({loan.type === "borrowed" ? "Money Taken From" : "Money Given To"})
+                <br />
+                Date: {loan.date}
+              </div>
               <Button 
                 onClick={() => deleteLoan(loan.id)} 
                 text="Delete" 
@@ -477,17 +635,42 @@ function Tracker() {
             <strong>Total Company Records: </strong> Rs{totalCompanyMoney}
           </p>
         </div>
+        {companyRecords.length > 0 && (
+          <div style={{ marginBottom: '10px' }}>
+            <Button 
+              onClick={handleSelectAllCompanyRecords} 
+              text={selectedCompanyRecords.length === companyRecords.length ? "Deselect All" : "Select All"} 
+            />
+            {selectedCompanyRecords.length > 0 && (
+              <Button 
+                onClick={() => confirmDelete('companyRecords')} 
+                text="Delete Selected" 
+                style={{ marginLeft: '10px', backgroundColor: '#ff4444' }}
+              />
+            )}
+          </div>
+        )}
         <ul>
           {companyRecords.map((record) => (
             <li key={record.id} style={{ 
               marginBottom: '10px',
               padding: '10px',
               borderRadius: '5px',
-              border: '1px solid #ccc'
+              border: '1px solid #ccc',
+              display: 'flex',
+              alignItems: 'center'
             }}>
-              <strong>Rs{record.amount}</strong> - {record.description}
-              <br />
-              Date: {record.date}
+              <input
+                type="checkbox"
+                checked={selectedCompanyRecords.includes(record.id)}
+                onChange={() => handleSelectCompanyRecord(record.id)}
+                style={{ marginRight: '10px' }}
+              />
+              <div>
+                <strong>Rs{record.amount}</strong> - {record.description}
+                <br />
+                Date: {record.date}
+              </div>
               <Button 
                 onClick={() => deleteCompanyRecord(record.id)} 
                 text="Delete" 
