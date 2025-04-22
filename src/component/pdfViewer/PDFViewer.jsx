@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import SignatureCanvas from 'react-signature-canvas';
 import Button from '../button/Button';
 
 function PDFViewer({ 
@@ -11,10 +12,35 @@ function PDFViewer({
   companyRecords = [],
   totalCompanyMoney 
 }) {
+  const [showSignatureModal, setShowSignatureModal] = useState(false);
+  const [signatureImage, setSignatureImage] = useState(null);
+  const sigCanvas = useRef(null);
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     if (isNaN(date)) return 'Invalid Date';
     return `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getFullYear()}`;
+  };
+
+  const clearSignature = () => {
+    sigCanvas.current.clear();
+    setSignatureImage(null);
+  };
+
+  const saveSignature = () => {
+    if (sigCanvas.current && !sigCanvas.current.isEmpty()) {
+      try {
+        // Instead of using getTrimmedCanvas, use the regular toDataURL
+        const signatureData = sigCanvas.current.toDataURL('image/png');
+        setSignatureImage(signatureData);
+        setShowSignatureModal(false);
+      } catch (error) {
+        console.error("Error saving signature:", error);
+        alert('There was an error saving your signature. Please try again.');
+      }
+    } else {
+      alert('Please provide a signature before saving.');
+    }
   };
 
   const generatePDF = () => {
@@ -152,6 +178,18 @@ function PDFViewer({
       alternateRowStyles: { fillColor: [240, 240, 240] }
     });
 
+    currentY = doc.lastAutoTable.finalY + 20;
+
+    // Signature Section
+    if (signatureImage) {
+      doc.setFontSize(14);
+      doc.setFont(undefined, 'bold');
+      doc.text("Authorized Signature", 20, currentY);
+      currentY += 10;
+      doc.addImage(signatureImage, 'PNG', 20, currentY, 60, 20); // Adjust size as needed
+      currentY += 30;
+    }
+
     // Footer
     const pageCount = doc.getNumberOfPages();
     for(let i = 1; i <= pageCount; i++) {
@@ -165,16 +203,96 @@ function PDFViewer({
   };
 
   return (
-    <Button 
-      onClick={generatePDF} 
-      text="Download PDF Report" 
-      style={{ 
-        marginTop: '20px',
-        backgroundColor: '#2980b9',
-        color: 'white',
-        padding: '10px 20px'
-      }} 
-    />
+    <div>
+      <Button 
+        onClick={() => setShowSignatureModal(true)} 
+        text="Add Signature & Download PDF" 
+        style={{ 
+          marginTop: '20px',
+          backgroundColor: '#2980b9',
+          color: 'white',
+          padding: '10px 20px'
+        }} 
+      />
+
+      {showSignatureModal && (
+        <div className="modal" style={{
+          position: 'fixed',
+          top: '0',
+          left: '0',
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div className="modal-content" style={{
+            background: '#fff',
+            padding: '20px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+            width: '90%',
+            maxWidth: '500px',
+            textAlign: 'center'
+          }}>
+            <h2>Add Your Signature</h2>
+            <div style={{ border: '1px solid #ccc', backgroundColor: '#fff', margin: '10px auto' }}>
+              <SignatureCanvas 
+                ref={sigCanvas}
+                canvasProps={{
+                  width: 400,
+                  height: 200,
+                  className: 'signature-canvas'
+                }}
+              />
+            </div>
+            <div style={{ marginTop: '10px' }}>
+              <Button 
+                onClick={saveSignature} 
+                text="Save Signature" 
+                style={{ backgroundColor: '#4CAF50', marginRight: '10px' }}
+              />
+              <Button 
+                onClick={clearSignature} 
+                text="Clear" 
+                style={{ backgroundColor: '#ff4444', marginRight: '10px' }}
+              />
+              <Button 
+                onClick={() => setShowSignatureModal(false)} 
+                text="Cancel" 
+                style={{ backgroundColor: '#757575' }}
+              />
+            </div>
+            {signatureImage && (
+              <Button 
+                onClick={generatePDF} 
+                text="Download PDF" 
+                style={{ 
+                  marginTop: '10px',
+                  backgroundColor: '#2980b9',
+                  color: 'white'
+                }}
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+      {signatureImage && !showSignatureModal && (
+        <Button 
+          onClick={generatePDF} 
+          text="Generate PDF Report" 
+          style={{ 
+            marginTop: '10px',
+            backgroundColor: '#2980b9',
+            color: 'white',
+            padding: '10px 20px'
+          }}
+        />
+      )}
+    </div>
   );
 }
 

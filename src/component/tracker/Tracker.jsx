@@ -237,7 +237,6 @@ function Tracker() {
     setCompanyRecords(companyRecords.filter(record => record.id !== id));
   };
 
-  // Calculate totals
   const totalExpenses = expenses.reduce((total, exp) => total + exp.amount, 0);
   const totalBorrowed = loans
     .filter(loan => loan.type === "borrowed")
