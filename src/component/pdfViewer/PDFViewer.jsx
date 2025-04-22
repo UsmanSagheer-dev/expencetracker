@@ -30,7 +30,7 @@ function PDFViewer({
   const saveSignature = () => {
     if (sigCanvas.current && !sigCanvas.current.isEmpty()) {
       try {
-        // Instead of using getTrimmedCanvas, use the regular toDataURL
+        // Use the regular toDataURL instead of getTrimmedCanvas
         const signatureData = sigCanvas.current.toDataURL('image/png');
         setSignatureImage(signatureData);
         setShowSignatureModal(false);
@@ -46,19 +46,36 @@ function PDFViewer({
   const generatePDF = () => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
     let currentY = 10;
+    
+    // Helper function to check if we need a new page
+    const checkForNewPage = (requiredSpace) => {
+      if (currentY + requiredSpace > pageHeight - 20) {
+        doc.addPage();
+        // Reset Y position and add header to new page
+        currentY = 20;
+        addHeaderToCurrentPage();
+        return true;
+      }
+      return false;
+    };
+    
+    // Function to add header to current page
+    const addHeaderToCurrentPage = () => {
+      doc.setFontSize(18);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(255, 255, 255);
+      doc.setFillColor(41, 128, 185);
+      doc.rect(0, 0, pageWidth, 20, 'F');
+      doc.text("Expense Tracker", 20, 15);
+      doc.setFontSize(12);
+      doc.text(`Report Date: ${formatDate(new Date())}`, pageWidth - 20, 15, { align: 'right' });
+      doc.setTextColor(0, 0, 0);
+    };
 
-    // Header
-    doc.setFontSize(18);
-    doc.setFont(undefined, 'bold');
-    doc.setTextColor(255, 255, 255);
-    doc.setFillColor(41, 128, 185);
-    doc.rect(0, 0, pageWidth, 20, 'F');
-    doc.text("Expense Tracker", 20, 15);
-    doc.setFontSize(12);
-    doc.text(`Report Date: ${formatDate(new Date())}`, pageWidth - 20, 15, { align: 'right' });
-    doc.setTextColor(0, 0, 0);
-
+    // Add header to first page
+    addHeaderToCurrentPage();
     currentY = 30;
 
     // Main Title
@@ -68,6 +85,7 @@ function PDFViewer({
     currentY += 20;
 
     // Budget Summary
+    checkForNewPage(45);
     doc.setFontSize(14);
     doc.setFont(undefined, 'bold');
     doc.text("Budget Summary", 20, currentY);
@@ -82,6 +100,7 @@ function PDFViewer({
     currentY += 15;
 
     // Expense List Table
+    checkForNewPage(20);
     doc.setFontSize(14);
     doc.setFont(undefined, 'bold');
     doc.text("Expense List", 20, currentY);
@@ -96,6 +115,7 @@ function PDFViewer({
         ])
       : [['No expenses recorded', '', '']];
 
+    // AutoTable handles its own pagination
     autoTable(doc, {
       head: [expenseColumns],
       body: expenseData,
@@ -107,12 +127,17 @@ function PDFViewer({
         fontSize: 12
       },
       bodyStyles: { fontSize: 10 },
-      alternateRowStyles: { fillColor: [240, 240, 240] }
+      alternateRowStyles: { fillColor: [240, 240, 240] },
+      didDrawPage: function(data) {
+        // Add header to each new page created by autoTable
+        addHeaderToCurrentPage();
+      }
     });
 
     currentY = doc.lastAutoTable.finalY + 10;
 
     // Loan Records
+    checkForNewPage(20);
     doc.setFontSize(14);
     doc.setFont(undefined, 'bold');
     doc.text("Money Records", 20, currentY);
@@ -139,12 +164,17 @@ function PDFViewer({
         fontSize: 12
       },
       bodyStyles: { fontSize: 10 },
-      alternateRowStyles: { fillColor: [240, 240, 240] }
+      alternateRowStyles: { fillColor: [240, 240, 240] },
+      didDrawPage: function(data) {
+        // Add header to each new page created by autoTable
+        addHeaderToCurrentPage();
+      }
     });
 
     currentY = doc.lastAutoTable.finalY + 10;
 
     // Company Records Section
+    checkForNewPage(45);
     doc.setFontSize(14);
     doc.setFont(undefined, 'bold');
     doc.text("Company Records", 20, currentY);
@@ -175,10 +205,20 @@ function PDFViewer({
         fontSize: 12
       },
       bodyStyles: { fontSize: 10 },
-      alternateRowStyles: { fillColor: [240, 240, 240] }
+      alternateRowStyles: { fillColor: [240, 240, 240] },
+      didDrawPage: function(data) {
+        // Add header to each new page created by autoTable
+        addHeaderToCurrentPage();
+      }
     });
 
     currentY = doc.lastAutoTable.finalY + 20;
+
+    // Signature Section - check if we need a new page for signature
+    if (checkForNewPage(50) || currentY > pageHeight - 50) {
+      // If we're too close to the bottom of the page, add a new page for signature
+      currentY = 40; // Give some space at the top
+    }
 
     // Signature Section
     if (signatureImage) {
@@ -195,8 +235,8 @@ function PDFViewer({
     for(let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
       doc.setFontSize(10);
-      doc.text(`Page ${i} of ${pageCount}`, pageWidth - 20, doc.internal.pageSize.height - 10, { align: 'right' });
-      doc.text(`Generated on: ${formatDate(new Date())}`, 20, doc.internal.pageSize.height - 10);
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth - 20, pageHeight - 10, { align: 'right' });
+      doc.text(`Generated on: ${formatDate(new Date())}`, 20, pageHeight - 10);
     }
 
     doc.save(`expense_report_${formatDate(new Date()).replace(/-/g, '_')}.pdf`);
@@ -280,6 +320,7 @@ function PDFViewer({
         </div>
       )}
 
+      {/* Show Generate PDF button outside the modal if signature is already captured */}
       {signatureImage && !showSignatureModal && (
         <Button 
           onClick={generatePDF} 
