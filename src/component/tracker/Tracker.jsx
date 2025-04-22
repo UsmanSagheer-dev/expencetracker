@@ -275,14 +275,34 @@ function Tracker() {
         <p style={{ color: 'blue', fontFamily: 'fantasy', fontSize: '25px' }}><strong>Total Expenses: </strong> Rs{totalExpenses}</p>
         <p style={{ color: "grey", fontFamily: 'revert-layer', fontSize: '25px' }}><strong>Remaining Budget: </strong> Rs{budget - totalExpenses}</p>
       </div>
-
-      <Button onClick={() => setShowModal(true)} text={isEditing ? "Edit Expense" : "Add Expense"} />
-      <Button onClick={() => setShowLoanModal(true)} text="Add Money Record" style={{ marginLeft: '10px' }} />
-      <Button 
-        onClick={() => setShowCompanyModal(true)} 
-        text="Add Company Record" 
-        style={{ marginLeft: '10px' }}
-      />
+<div style={{
+  backgroundColor: '#f0f0f0',
+  padding: '10px',
+  borderRadius: '5px',
+  marginBottom: '20px',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  flexWrap: 'wrap',
+  gap: '10px' 
+}}>
+  <Button 
+    onClick={() => setShowModal(true)} 
+    text={isEditing ? "Edit Expense" : "Add Expense"} 
+    style={{ backgroundColor: '#4CAF50' }} 
+  />
+  <Button 
+    onClick={() => setShowLoanModal(true)} 
+    text="Add Money Record" 
+    style={{ backgroundColor: '#2196F3' }} 
+  />
+  <Button 
+    onClick={() => setShowCompanyModal(true)} 
+    text="Add Company Record" 
+    style={{ backgroundColor: '#9C27B0' }} 
+  />
+</div>
+    
 
       {showModal && (
         <div className="modal" style={{
@@ -365,8 +385,8 @@ function Tracker() {
                 width: '100%',
               }}
             /><br />
-            <Button onClick={addOrUpdateExpense} text={isEditing ? "Update Expense" : "Add Expense"} />
-            <Button onClick={() => setShowModal(false)} text="Close" />
+            <Button onClick={addOrUpdateExpense} text={isEditing ? "Update Expense" : "Add Expense"} style={{ backgroundColor: '#4CAF50' }} />
+            <Button onClick={() => setShowModal(false)} text="Close" style={{ backgroundColor: '#757575' }} />
           </div>
         </div>
       )}
@@ -438,8 +458,8 @@ function Tracker() {
               <option value="borrowed">Money Taken From</option>
               <option value="lent">Money Given To</option>
             </select><br />
-            <Button onClick={addLoan} text="Add Record" />
-            <Button onClick={() => setShowLoanModal(false)} text="Close" />
+            <Button onClick={addLoan} text="Add Record" style={{ backgroundColor: '#2196F3' }} />
+            <Button onClick={() => setShowLoanModal(false)} text="Close" style={{ backgroundColor: '#757575' }} />
           </div>
         </div>
       )}
@@ -495,8 +515,8 @@ function Tracker() {
                 width: '100%',
               }}
             /><br />
-            <Button onClick={addCompanyRecord} text="Add Record" />
-            <Button onClick={() => setShowCompanyModal(false)} text="Close" />
+            <Button onClick={addCompanyRecord} text="Add Record" style={{ backgroundColor: '#9C27B0' }} />
+            <Button onClick={() => setShowCompanyModal(false)} text="Close" style={{ backgroundColor: '#757575' }} />
           </div>
         </div>
       )}
@@ -532,6 +552,7 @@ function Tracker() {
             <Button 
               onClick={() => setShowConfirmDelete(false)} 
               text="Cancel"
+              style={{ backgroundColor: '#757575' }}
             />
           </div>
         </div>
@@ -540,10 +561,11 @@ function Tracker() {
       <div className="expense-list">
         <h2>Expense List</h2>
         {expenses.length > 0 && (
-          <div style={{ marginBottom: '10px' }}>
+          <div style={{ marginBottom: '10px',display: 'flex', justifyContent: 'center', alignItems: 'center',gap: '10px',flexWrap: 'wrap' }}>
             <Button 
               onClick={handleSelectAllExpenses} 
               text={selectedExpenses.length === expenses.length ? "Deselect All" : "Select All"} 
+              style={{ backgroundColor: '#FF9800' }}
             />
             {selectedExpenses.length > 0 && (
               <Button 
@@ -554,12 +576,13 @@ function Tracker() {
             )}
           </div>
         )}
-        <ul>
+        <ul style={{display:'flex',alignItems:'center',justifyContent:'center',width:'100%',flexWrap:'wrap',gap:'10px'}}>
           {expenses.map((expense, index) => (
             <li key={index} style={{ 
               marginBottom: '10px',
               display: 'flex',
-              alignItems: 'center'
+              alignItems: 'center',
+              color:'red'
             }}>
               <input
                 type="checkbox"
@@ -568,8 +591,8 @@ function Tracker() {
                 style={{ marginRight: '10px' }}
               />
               {expense.title} - Rs{expense.amount} (Date: {expense.date}){" "}
-              <Button onClick={() => editExpense(index)} text="Edit" style={{ marginLeft: '5px' }} />
-              <Button onClick={() => deleteExpense(index)} text="Delete" style={{ marginLeft: '5px' }} />
+              <Button onClick={() => editExpense(index)} text="Edit" style={{ marginLeft: '5px', backgroundColor: '#2196F3' }} />
+              <Button onClick={() => deleteExpense(index)} text="Delete" style={{ marginLeft: '5px', backgroundColor: '#ff4444' }} />
             </li>
           ))}
         </ul>
@@ -586,6 +609,7 @@ function Tracker() {
             <Button 
               onClick={handleSelectAllLoans} 
               text={selectedLoans.length === loans.length ? "Deselect All" : "Select All"} 
+              style={{ backgroundColor: '#FF9800' }}
             />
             {selectedLoans.length > 0 && (
               <Button 
@@ -621,7 +645,7 @@ function Tracker() {
               <Button 
                 onClick={() => deleteLoan(loan.id)} 
                 text="Delete" 
-                style={{ marginLeft: '5px' }}
+                style={{ marginLeft: '5px', backgroundColor: '#ff4444' }}
               />
             </li>
           ))}
@@ -640,6 +664,7 @@ function Tracker() {
             <Button 
               onClick={handleSelectAllCompanyRecords} 
               text={selectedCompanyRecords.length === companyRecords.length ? "Deselect All" : "Select All"} 
+              style={{ backgroundColor: '#FF9800' }}
             />
             {selectedCompanyRecords.length > 0 && (
               <Button 
@@ -674,7 +699,7 @@ function Tracker() {
               <Button 
                 onClick={() => deleteCompanyRecord(record.id)} 
                 text="Delete" 
-                style={{ marginLeft: '5px' }}
+                style={{ marginLeft: '5px', backgroundColor: '#ff4444' }}
               />
             </li>
           ))}
