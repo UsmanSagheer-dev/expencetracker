@@ -232,12 +232,12 @@ function PDFViewer({
 
     // Footer
     const pageCount = doc.getNumberOfPages();
-    for(let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(10);
-      doc.text(`Page ${i} of ${pageCount}`, pageWidth - 20, pageHeight - 10, { align: 'right' });
-      doc.text(`Generated on: ${formatDate(new Date())}`, 20, pageHeight - 10);
-    }
+    // for(let i = 1; i <= pageCount; i++) {
+    //   doc.setPage(i);
+    //   doc.setFontSize(10);
+    //   doc.text(`Page ${i} of ${pageCount}`, pageWidth - 20, pageHeight - 10, { align: 'right' });
+    //   doc.text(`Generated on: ${formatDate(new Date())}`, 20, pageHeight - 10);
+    // }
 
     doc.save(`expense_report_${formatDate(new Date()).replace(/-/g, '_')}.pdf`);
   };
