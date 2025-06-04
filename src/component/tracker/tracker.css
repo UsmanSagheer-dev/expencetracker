@@ -1,0 +1,560 @@
+/* Tracker.css */
+
+/* Base container */
+.tracker-container {
+    min-height: 100vh;
+    background-color: #f5f7fa;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    padding: 1rem;
+    max-width: 90%;
+    margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+    .tracker-container {
+        padding: 2rem;
+        max-width: 1280px;
+    }
+}
+
+/* Titles */
+.tracker-title {
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    font-weight: 700;
+    color: #2d3748;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-title {
+    font-size: clamp(1.25rem, 4vw, 1.5rem);
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 1rem;
+}
+
+/* Budget Section */
+.budget-section {
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .budget-section {
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+}
+
+.budget-input {
+    width: 100%;
+    max-width: 280px;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    font-size: 0.9rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.budget-input:focus {
+    outline: none;
+    border-color: #38a169;
+    box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.2);
+}
+
+.budget-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+@media (min-width: 640px) {
+    .budget-info {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+}
+
+.budget-total,
+.budget-expenses,
+.budget-remaining {
+    font-size: clamp(0.9rem, 3vw, 1rem);
+    font-weight: 500;
+    flex: 1 1 100%;
+}
+
+@media (min-width: 640px) {
+
+    .budget-total,
+    .budget-expenses,
+    .budget-remaining {
+        flex: 1 1 30%;
+    }
+}
+
+.budget-total {
+    color: #e53e3e;
+}
+
+.budget-expenses {
+    color: #3182ce;
+}
+
+.budget-remaining {
+    color: #718096;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Button Styles */
+.btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: clamp(0.85rem, 2.5vw, 0.9rem);
+    font-weight: 600;
+    color: #ffffff;
+    transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-expense {
+    background-color: #38a169;
+}
+
+.btn-expense:hover {
+    background-color: #2f855a;
+}
+
+.btn-loan {
+    background-color: #3182ce;
+}
+
+.btn-loan:hover {
+    background-color: #2b6cb0;
+}
+
+.btn-company {
+    background-color: #805ad5;
+}
+
+.btn-company:hover {
+    background-color: #6b46c1;
+}
+
+.btn-close {
+    background-color: #718096;
+}
+
+.btn-close:hover {
+    background-color: #5a667f;
+}
+
+.btn-delete {
+    background-color: #e53e3e;
+}
+
+.btn-delete:hover {
+    background-color: #c53030;
+}
+
+.btn-edit {
+    background-color: #3182ce;
+}
+
+.btn-edit:hover {
+    background-color: #2b6cb0;
+}
+
+.btn-select {
+    background-color: #ed8936;
+}
+
+.btn-select:hover {
+    background-color: #dd6b20;
+}
+
+/* Modal Styles */
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    /* Use fixed to take it out of the normal flow and cover the viewport */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Add a semi-transparent background to emphasize the modal */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    /* Keep high z-index */
+    overflow-y: auto;
+    /* Allow scrolling if modal content overflows */
+}
+
+/* Ensure the modal content is centered and prominent */
+.modal-content {
+    background-color: #ffffff;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 480px;
+    position: relative;
+    transform: translateY(-20px);
+    animation: modalSlideIn 0.3s ease forwards;
+    z-index: 1001;
+    /* Ensure modal content is above the overlay */
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        max-width: 90%;
+        padding: 1rem;
+    }
+}
+
+@keyframes modalSlideIn {
+    to {
+        transform: translateY(0);
+    }
+}
+
+.modal-content--center {
+    text-align: center;
+}
+
+.modal-title {
+    font-size: clamp(1.25rem, 4vw, 1.5rem);
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 1.25rem;
+}
+
+.modal-text {
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    color: #4a5568;
+    margin-bottom: 1.5rem;
+}
+
+/* Enhanced Expense Modal */
+.expense-modal {
+    background: linear-gradient(135deg, #ffffff, #f7fafc);
+    padding: 2rem;
+}
+
+@media (max-width: 480px) {
+    .expense-modal {
+        padding: 1.25rem;
+    }
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    color: #718096;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.modal-close-btn:hover {
+    color: #2d3748;
+}
+
+.expense-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  
+
+}
+
+.form-label {
+    font-size: clamp(0.85rem, 2.5vw, 0.9rem);
+    font-weight: 500;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    font-size: clamp(0.85rem, 2.5vw, 0.9rem);
+    background-color: #fafafa;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #38a169;
+    box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.2);
+}
+
+.form-input:invalid:focus {
+    border-color: #e53e3e;
+    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.2);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+}
+
+/* Expense List */
+.expense-list {
+    background-color: #ffffff;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .expense-list {
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+}
+
+.expense-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+    .expense-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .expense-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.expense-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    transition: background-color 0.2s;
+}
+
+.expense-item:hover {
+    background-color: #f7fafc;
+}
+
+.expense-checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 0.5rem;
+}
+
+.expense-details {
+    flex: 1;
+}
+
+.expense-title {
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    font-weight: 500;
+    color: #e53e3e;
+}
+
+.expense-date {
+    font-size: clamp(0.8rem, 2vw, 0.875rem);
+    color: #718096;
+}
+
+/* Loan List */
+.loan-list {
+    background-color: #ffffff;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .loan-list {
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+}
+
+.summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 640px) {
+    .summary {
+        flex-direction: row;
+        gap: 1rem;
+    }
+}
+
+.summary-taken,
+.summary-given {
+    font-size: clamp(0.9rem, 3vw, 1rem);
+    font-weight: 500;
+    flex: 1 1 100%;
+}
+
+@media (min-width: 640px) {
+
+    .summary-taken,
+    .summary-given {
+        flex: 1 1 45%;
+    }
+}
+
+.summary-taken {
+    color: #e53e3e;
+}
+
+.summary-given {
+    color: #38a169;
+}
+
+.loan-list__items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.loan-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    transition: background-color 0.2s;
+}
+
+.loan-item:hover {
+    background-color: #f7fafc;
+}
+
+.loan-checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 0.5rem;
+}
+
+.loan-details {
+    flex: 1;
+}
+
+.loan-details p {
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    font-weight: 500;
+}
+
+.loan-date {
+    font-size: clamp(0.8rem, 2vw, 0.875rem);
+    color: #718096;
+}
+
+/* Company Records */
+.company-records {
+    background-color: #ffffff;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .company-records {
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+}
+
+.summary-total {
+    font-size: clamp(0.9rem, 3vw, 1rem);
+    font-weight: 500;
+    color: #805ad5;
+    margin-bottom: 1rem;
+}
+
+.company-list__items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.company-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    transition: background-color 0.2s;
+}
+
+.company-item:hover {
+    background-color: #f7fafc;
+}
+
+.company-checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 0.5rem;
+}
+
+.company-details {
+    flex: 1;
+}
+
+.company-details p {
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    font-weight: 500;
+}
+
+.company-date {
+    font-size: clamp(0.8rem, 2vw, 0.875rem);
+    color: #718096;
+}
