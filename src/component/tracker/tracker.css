@@ -3,16 +3,17 @@
 /* Base container */
 .tracker-container {
     min-height: 100vh;
-    background-color: #7ca1d9;
+    background-color: #ffffff;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    padding: 1rem;
-    max-width: 100%;
-    margin: 0 ;
+    padding: 2px;
+    max-width: 90%;
+    margin: 0 auto;
 }
 
 @media (min-width: 768px) {
     .tracker-container {
         padding: 1rem;
+        max-width: 1280px;
     }
 }
 
